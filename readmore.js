@@ -86,17 +86,23 @@
       maxHeight: 'none'
     });
   }
+  
+  $( window ).resize(function() {
+    $('[data-readmore]').trigger("destroy");
+  });
 
   var resizeBoxes = debounce(function() {
     $('[data-readmore]').each(function() {
       var current = $(this),
           isExpanded = (current.attr('aria-expanded') === 'true');
-
+          
+      $(current).trigger("destroy");
       setBoxHeights(current);
 
       current.css({
         height: current.data( (isExpanded ? 'expandedHeight' : 'collapsedHeight') )
       });
+      $(current).dotdotdot();
     });
   }, 100);
 
@@ -148,6 +154,8 @@
     this._name = readmore;
 
     this.init();
+    
+    $('[data-readmore]').dotdotdot();
 
     // IE8 chokes on `window.addEventListener`, so need to test for support.
     if (window.addEventListener) {
@@ -240,13 +248,14 @@
       // Since we determined the new "expanded" state above we're now out of sync
       // with our true current state, so we need to flip the value of `expanded`
       $this.options.beforeToggle(trigger, element, ! expanded);
+      $(element).trigger("destroy");
 
       $element.css({'height': newHeight});
 
       // Fire afterToggle callback
       $element.on('transitionend', function() {
         $this.options.afterToggle(trigger, element, expanded);
-
+        $(element).dotdotdot();
         $(this).attr({
           'aria-expanded': expanded
         }).off('transitionend');
